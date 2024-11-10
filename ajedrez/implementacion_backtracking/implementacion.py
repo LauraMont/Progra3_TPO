@@ -24,7 +24,6 @@
 # esSolucion: se visitaron todas las casillas , luego retorno la primera solución encontrada
 # volverPosicionAnterior: caballo vuelve a la posición anterior pasada por parametro y marca posicion anterior como no visitada
 
-#Casilla -1 -> No ha sido visitada
 
 class Tablero:
     #Definimos el tamaño del tablero
@@ -49,4 +48,92 @@ class Tablero:
         x, y = posicion
         return 0 <= x < self.N and 0 <= y < self.N and tablero[x][y] == -1
     
+    # Inicializamos el tablero con todas las celdas en -1 (no visitadas)
+    def iniciarTablero(self):
+        for i in range(self.N):
+            for j in range(self.N):
+                self.tableroSolucion[i][j] = -1
+        # Punto de partida
+        x, y = self.posicionInicial
+        self.tableroSolucion[x][y] = 0
+
+    def recorridoCaballo(self):
+        self.iniciarTablero()
+        self.solucionado = self.recorridoCaballo_recursivo(self.posicionInicial, 1, self.tableroSolucion)
+        return self.solucionado
     
+    # Función recursiva que vamos a usar para encontrar la solución
+    def recorridoCaballo_recursivo(self, posicion, mov_i, tableroSolucion):
+
+        # Log: muestra el movimiento actual y la posición
+        print(f"Intentando movimiento {mov_i} en posición {posicion}")
+        if mov_i == self.N * self.N:
+            return True
+
+        for movimiento in self.movimientosCaballo:
+            posicionSiguiente = (posicion[0] + movimiento[0], posicion[1] + movimiento[1])
+            if self.esMovimientoFactible(posicionSiguiente, tableroSolucion):
+                tableroSolucion[posicionSiguiente[0]][posicionSiguiente[1]] = mov_i
+                print(f"Se movio a {posicionSiguiente} (movimiento {mov_i})")
+                if self.recorridoCaballo_recursivo(posicionSiguiente, mov_i + 1, tableroSolucion):
+                    return True
+                else:
+                    # Backtracking
+                    tableroSolucion[posicionSiguiente[0]][posicionSiguiente[1]] = -1
+                    print(f"Backtracking desde {posicionSiguiente} (movimiento {mov_i})")
+        return False
+
+     # Obtener el recorrido de la solución
+    def obtenerRecorridoSolucion(self, tableroSolucion):
+        recorridoSolucion = [None] * (self.N * self.N)
+        for movimiento in range(self.N * self.N):
+            encontrado = False
+            for y in range(self.N):
+                for x in range(self.N):
+                    if tableroSolucion[x][y] == movimiento:
+                        recorridoSolucion[movimiento] = (y, x)
+                        encontrado = True
+                        break
+                if encontrado:
+                    break
+        return recorridoSolucion
+
+    # Imprimir el tablero de solución y el recorrido realizado
+    def imprimirTablero(self):
+        if not self.solucionado:
+            return
+
+        separador = "+----" * self.N + "+"
+
+        for x in range(self.N):
+            print(separador)
+            for y in range(self.N):
+                print(f"| {self.tableroSolucion[x][y]:02} ", end="")
+            print("|")
+        print(separador)
+
+        print("\nRecorrido realizado:\n")
+        movimiento = 0
+        for posicion in self.obtenerRecorridoSolucion(self.tableroSolucion):
+            if movimiento >= self.N:
+                print()
+                movimiento = 0
+            print(f"({posicion[1] + 1}, {posicion[0] + 1})  ", end="")
+            movimiento += 1
+        print()
+
+
+# PRUEBA EN EJECUCION SOLO POR CONSOLA:
+if __name__ == "__main__":
+    # Solicitar al usuario el tamaño del tablero y la posición inicial
+    N = int(input("Ingrese el tamaño del tablero (N): "))
+    x_inicio = int(input("Ingrese la posición inicial FILA del caballo: "))
+    y_inicio = int(input("Ingrese la posición inicial COLUMNA del caballo: "))
+
+    movimientos = [(2, 1), (1, 2), (-1, 2), (-2, 1), (-2, -1), (-1, -2), (1, -2), (2, -1)]
+    tablero = Tablero(N, movimientos, x_inicio, y_inicio)
+
+    if tablero.recorridoCaballo():
+        tablero.imprimirTablero()
+    else:
+        print("No se encontró solución.")
