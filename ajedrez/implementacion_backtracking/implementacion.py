@@ -94,7 +94,7 @@ if __name__ == "__main__":
         print("La posición inicial es inválida. Debe estar dentro de los límites del tablero.")
     else:
         movimientos = [(2, 1), (1, 2), (-1, 2), (-2, 1), (-2, -1), (-1, -2), (1, -2), (2, -1)]
-        tablero = Tablero(N, movimientos, x_inicio, y_inicio)
+        tablero = TableroBT(N, movimientos, x_inicio, y_inicio)
 
         if tablero.recorridoCaballo():
             tablero.imprimirTablero()
