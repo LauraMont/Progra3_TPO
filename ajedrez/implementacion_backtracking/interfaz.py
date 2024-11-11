@@ -1,6 +1,6 @@
 import pygame
 import sys
-from implementacion import Tablero
+from implementacion import TableroBT
 
 def renderizar_tablero(screen, tablero, N):
     # Renderizar el tablero de ajedrez
@@ -33,7 +33,7 @@ def main():
 
     # Posibles movimientos del caballo
     movimientos = [(2, 1), (1, 2), (-1, 2), (-2, 1), (-2, -1), (-1, -2), (1, -2), (2, -1)]
-    tablero = Tablero(N, movimientos, x_inicio, y_inicio)
+    tablero = TableroBT(N, movimientos, x_inicio, y_inicio)
 
     # Si no hay solución, mostrar el mensaje y salir
     if not tablero.recorridoCaballo():

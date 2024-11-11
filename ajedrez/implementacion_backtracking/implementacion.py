@@ -26,7 +26,7 @@
 
 import time
 
-class Tablero:
+class TableroBT:
     def __init__(self, celdas, movimientos, x, y):
         self.N = celdas
         self.posicionInicial = (x, y)
