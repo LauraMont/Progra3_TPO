@@ -80,30 +80,3 @@ def print_final_board(solution, N):
     print("\nRecorrido completo del caballo:")
     for row in board:
         print(" ".join(row))
-
-# Main para ejecución con diferentes valores de N y elección de posición inicial
-def main():
-    try:
-        N = int(input("Ingrese el tamaño del tablero (N x N): "))
-        start_x = int(input(f"Ingrese la posición inicial del caballo (fila, entre 0 y {N-1}): "))
-        start_y = int(input(f"Ingrese la posición inicial del caballo (columna, entre 0 y {N-1}): "))
-        
-        # Comprobación de límites de entrada
-        if not (0 <= start_x < N and 0 <= start_y < N):
-            print("La posición inicial está fuera de los límites del tablero.")
-            return
-        
-        # Ejecutar Branch & Bound con límites de tiempo
-        start_time = time.time()
-        solution, nodes_explored = knight_tour_BB(N, start_x, start_y, max_time=10)
-        execution_time = time.time() - start_time
-
-        # Imprimir resultados finales
-        print_final_board(solution, N)
-        print(f"\nNodos explorados: {nodes_explored}")
-        print(f"Tiempo de ejecución: {execution_time:.4f} segundos")
-
-    except ValueError:
-        print("Por favor, ingrese un número entero válido.")
-
-main()
