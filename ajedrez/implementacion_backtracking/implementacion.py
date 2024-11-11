@@ -24,116 +24,79 @@
 # esSolucion: se visitaron todas las casillas , luego retorno la primera solución encontrada
 # volverPosicionAnterior: caballo vuelve a la posición anterior pasada por parametro y marca posicion anterior como no visitada
 
+import time
 
 class Tablero:
-    #Definimos el tamaño del tablero
     def __init__(self, celdas, movimientos, x, y):
         self.N = celdas
-        # Establecemos las coordenadas de la posicion inicial (X,Y)
-        self.posicionInicial = (x-1, y-1) # Para que 1,1 sea en la coordinada inicial cuando construimos
-        # Los posibles movimientos del caballo
+        self.posicionInicial = (x, y)
         self.movimientosCaballo = movimientos
-        # Tablero con las soluciones
         self.tableroSolucion = [[-1 for _ in range(self.N)] for _ in range(self.N)]
-        # Para flaguear si se encontró la solución
-        self.solucionado = False
-        #Iniciar tablero con los valores que determinamos  
-        self.iniciarTablero()
+        self.tableroSolucion[x][y] = 0  # Marca la posición inicial como visitada
+        self.movimientosRealizados = 0  # Contador de movimientos
 
+    def esMovimientoFactible(self, x, y):
+        return 0 <= x < self.N and 0 <= y < self.N and self.tableroSolucion[x][y] == -1
     
-    # Funcion para determinar si el movimiento es factible o no, las condiciones son:
-    # 1. Se encuentra dentro de los rangos del tablero
-    # 2. Que la casilla no haya sido visitada (casilla == -1) 
-    def esMovimientoFactible(self, posicion, tablero):
-        x, y = posicion
-        return 0 <= x < self.N and 0 <= y < self.N and tablero[x][y] == -1
-    
-    # Inicializamos el tablero con todas las celdas en -1 (no visitadas)
-    def iniciarTablero(self):
-        for i in range(self.N):
-            for j in range(self.N):
-                self.tableroSolucion[i][j] = -1
-        # Punto de partida
-        x, y = self.posicionInicial
-        self.tableroSolucion[x][y] = 0
-
     def recorridoCaballo(self):
-        self.iniciarTablero()
-        self.solucionado = self.recorridoCaballo_recursivo(self.posicionInicial, 1, self.tableroSolucion)
-        return self.solucionado
+        # Inicia el contador de tiempo
+        inicio = time.time()
+        
+        # Ejecuta el recorrido
+        solucion = self.recorridoCaballo_recursivo(self.posicionInicial, 1)
+        
+        # Calcula el tiempo transcurrido
+        fin = time.time()
+        self.tiempoTotal = fin - inicio
+        
+        return solucion
     
-    # Función recursiva que vamos a usar para encontrar la solución
-    def recorridoCaballo_recursivo(self, posicion, mov_i, tableroSolucion):
-
-        # Log: muestra el movimiento actual y la posición
-        print(f"Intentando movimiento {mov_i} en posición {posicion}")
+    def recorridoCaballo_recursivo(self, posicion, mov_i):
         if mov_i == self.N * self.N:
             return True
 
-        for movimiento in self.movimientosCaballo:
-            posicionSiguiente = (posicion[0] + movimiento[0], posicion[1] + movimiento[1])
-            if self.esMovimientoFactible(posicionSiguiente, tableroSolucion):
-                tableroSolucion[posicionSiguiente[0]][posicionSiguiente[1]] = mov_i
-                print(f"Se movio a {posicionSiguiente} (movimiento {mov_i})")
-                if self.recorridoCaballo_recursivo(posicionSiguiente, mov_i + 1, tableroSolucion):
+        x, y = posicion
+        for dx, dy in self.movimientosCaballo:
+            nx, ny = x + dx, y + dy
+            if self.esMovimientoFactible(nx, ny):
+                self.tableroSolucion[nx][ny] = mov_i
+                self.movimientosRealizados += 1  # Cuenta el movimiento
+                if self.recorridoCaballo_recursivo((nx, ny), mov_i + 1):
                     return True
-                else:
-                    # Backtracking
-                    tableroSolucion[posicionSiguiente[0]][posicionSiguiente[1]] = -1
-                    print(f"Backtracking desde {posicionSiguiente} (movimiento {mov_i})")
+                self.tableroSolucion[nx][ny] = -1  # Backtracking
         return False
 
-     # Obtener el recorrido de la solución
-    def obtenerRecorridoSolucion(self, tableroSolucion):
-        recorridoSolucion = [None] * (self.N * self.N)
-        for movimiento in range(self.N * self.N):
-            encontrado = False
-            for y in range(self.N):
-                for x in range(self.N):
-                    if tableroSolucion[x][y] == movimiento:
-                        recorridoSolucion[movimiento] = (y, x)
-                        encontrado = True
-                        break
-                if encontrado:
-                    break
-        return recorridoSolucion
-
-    # Imprimir el tablero de solución y el recorrido realizado
     def imprimirTablero(self):
-        if not self.solucionado:
+        if any(-1 in row for row in self.tableroSolucion):
+            print("No se encontró solución.")
             return
 
         separador = "+----" * self.N + "+"
-
-        for x in range(self.N):
+        for row in self.tableroSolucion:
             print(separador)
-            for y in range(self.N):
-                print(f"| {self.tableroSolucion[x][y]:02} ", end="")
-            print("|")
+            print("".join(f"| {val:02} " for val in row) + "|")
         print(separador)
 
-        print("\nRecorrido realizado:\n")
-        movimiento = 0
-        for posicion in self.obtenerRecorridoSolucion(self.tableroSolucion):
-            if movimiento >= self.N:
-                print()
-                movimiento = 0
-            print(f"({posicion[1] + 1}, {posicion[0] + 1})  ", end="")
-            movimiento += 1
-        print()
+        # Imprime estadísticas de ejecución
+        print(f"\nMovimientos realizados: {self.movimientosRealizados}")
+        print(f"Tiempo total: {self.tiempoTotal:.4f} segundos")
 
 
-# PRUEBA EN EJECUCION SOLO POR CONSOLA:
+# PRUEBA
 if __name__ == "__main__":
-    # Solicitar al usuario el tamaño del tablero y la posición inicial
+    # Solicitar tamaño del tablero y la posición inicial del caballo
     N = int(input("Ingrese el tamaño del tablero (N): "))
-    x_inicio = int(input("Ingrese la posición inicial FILA del caballo: "))
-    y_inicio = int(input("Ingrese la posición inicial COLUMNA del caballo: "))
+    x_inicio = int(input(f"Ingrese la fila de la posición inicial del caballo (0 a {N-1}): "))
+    y_inicio = int(input(f"Ingrese la columna de la posición inicial del caballo (0 a {N-1}): "))
 
-    movimientos = [(2, 1), (1, 2), (-1, 2), (-2, 1), (-2, -1), (-1, -2), (1, -2), (2, -1)]
-    tablero = Tablero(N, movimientos, x_inicio, y_inicio)
-
-    if tablero.recorridoCaballo():
-        tablero.imprimirTablero()
+    # Validar que la posición esté dentro de los límites del tablero
+    if not (0 <= x_inicio < N and 0 <= y_inicio < N):
+        print("La posición inicial es inválida. Debe estar dentro de los límites del tablero.")
     else:
-        print("No se encontró solución.")
+        movimientos = [(2, 1), (1, 2), (-1, 2), (-2, 1), (-2, -1), (-1, -2), (1, -2), (2, -1)]
+        tablero = Tablero(N, movimientos, x_inicio, y_inicio)
+
+        if tablero.recorridoCaballo():
+            tablero.imprimirTablero()
+        else:
+            print("No se encontró solución.")
