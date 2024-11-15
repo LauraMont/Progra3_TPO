@@ -1,6 +1,5 @@
 import heapq
 import time
-import os
 
 # Movimientos posibles del caballo
 dx = [2, 1, -1, -2, -2, -1, 1, 2]
@@ -19,34 +18,35 @@ def count_moves(x, y, visited, N):
             count += 1
     return count
 
-# Branch & Bound con heurística y cálculo de nodos explorados
+# Algoritmo Branch & Bound 
 def knight_tour_BB(N, start_x, start_y, max_time=5):
+    # Paso 1: Inicialización de estructuras
     visited = [[False for _ in range(N)] for _ in range(N)]
-    path = []
+    path = [(start_x, start_y)]
     visited[start_x][start_y] = True
-    path.append((start_x, start_y))
-
-    # Cola de prioridad para priorizar los caminos más prometedores
-    queue = [(0, start_x, start_y, path, visited)]
+    mejorSolucion = None
     start_time = time.time()
     nodes_explored = 0
 
-    while queue:
+    # Crear la estructura de entorno (cola de prioridad)
+    env = [(0, start_x, start_y, path, visited)]  # prioridad, x, y, camino, tablero visitado
+
+    while env:
         # Verificar si el tiempo límite ha sido alcanzado
         if time.time() - start_time > max_time:
             print("Tiempo límite alcanzado. No se encontró una solución completa.")
-            return None, nodes_explored
+            return mejorSolucion, nodes_explored
 
-        # Extraer el siguiente nodo en función de la prioridad
-        _, x, y, current_path, current_visited = heapq.heappop(queue)
+        # Paso 2: Extraer el nodo con mayor prioridad (menor número de movimientos posibles)
+        _, x, y, current_path, current_visited = heapq.heappop(env)
         nodes_explored += 1
 
-        # Comprobar si hemos cubierto todas las casillas
+        # Paso 3: Verificar si es solución
         if len(current_path) == N * N:
-            return current_path, nodes_explored
+            return current_path, nodes_explored  # Solución completa encontrada
 
-        # Generar los posibles movimientos
-        next_moves = []
+        # Paso 4: Generar hijos
+        hijos = []
         for i in range(8):
             nx, ny = x + dx[i], y + dy[i]
             if is_safe(nx, ny, N) and not current_visited[nx][ny]:
@@ -55,18 +55,21 @@ def knight_tour_BB(N, start_x, start_y, max_time=5):
                 if future_options == 0 and len(current_path) < N * N - 1:
                     continue  # Podar ramas que llevan a callejones sin salida
                 
+                # Crear hijo (nueva posición del caballo)
                 next_visited = [row[:] for row in current_visited]
                 next_visited[nx][ny] = True
                 next_path = current_path + [(nx, ny)]
-                priority = future_options  # Usar movimientos futuros como prioridad
-                next_moves.append((priority, nx, ny, next_path, next_visited))
+                
+                # Paso 5: Calcular prioridad (usando movimientos futuros como heurística) y agregar a hijos
+                priority = future_options
+                hijos.append((priority, nx, ny, next_path, next_visited))
 
-        # Ordenar movimientos futuros por la heurística de Warnsdorff
-        next_moves.sort()
-        for move in next_moves:
-            heapq.heappush(queue, move)
+        # Ordenar hijos por la prioridad de Warnsdorff y agregarlos a la cola
+        hijos.sort()
+        for hijo in hijos:
+            heapq.heappush(env, hijo)
 
-    return None, nodes_explored
+    return mejorSolucion, nodes_explored
 
 # Función para mostrar el recorrido completo al final
 def print_final_board(solution, N):
