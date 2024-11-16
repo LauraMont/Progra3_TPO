@@ -35,7 +35,7 @@ def knight_tour_BB(N, start_x, start_y, max_time=5):
         # Verificar si el tiempo límite ha sido alcanzado
         if time.time() - start_time > max_time:
             print("Tiempo límite alcanzado. No se encontró una solución completa.")
-            return mejorSolucion, nodes_explored
+            return mejorSolucion, nodes_explored, time.time() - start_time
 
         # Paso 2: Extraer el nodo con mayor prioridad (menor número de movimientos posibles)
         _, x, y, current_path, current_visited = heapq.heappop(env)
@@ -43,7 +43,7 @@ def knight_tour_BB(N, start_x, start_y, max_time=5):
 
         # Paso 3: Verificar si es solución
         if len(current_path) == N * N:
-            return current_path, nodes_explored  # Solución completa encontrada
+            return current_path, nodes_explored, time.time() - start_time  # Solución completa encontrada
 
         # Paso 4: Generar hijos
         hijos = []
@@ -69,7 +69,7 @@ def knight_tour_BB(N, start_x, start_y, max_time=5):
         for hijo in hijos:
             heapq.heappush(env, hijo)
 
-    return mejorSolucion, nodes_explored
+    return mejorSolucion, nodes_explored, time.time() -start_time
 
 # Función para mostrar el recorrido completo al final
 def print_final_board(solution, N):

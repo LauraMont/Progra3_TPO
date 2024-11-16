@@ -2,7 +2,7 @@ import pygame
 import sys
 from implementacion import TableroBT
 
-def renderizar_tablero(screen, tablero, N):
+def renderizar_tablero(screen, tablero, N, tiempo_total, nodos_recorridos):
     # Renderizar el tablero de ajedrez
     for x in range(N):
         for y in range(N):
@@ -13,6 +13,12 @@ def renderizar_tablero(screen, tablero, N):
                 font = pygame.font.Font(None, 36)
                 text = font.render(str(tablero[x][y]), True, (255, 0, 0))
                 screen.blit(text, (y * 60 + 20, x * 60 + 20))
+    # Renderizar el tiempo total de ejecución y nodos recorridos
+    font = pygame.font.Font(None, 26)
+    tiempo_text = font.render(f"Tiempo de ejecucion: {tiempo_total:.2f} s", True, (255, 255, 255))
+    nodos_text = font.render(f"Nodos recorridos: {nodos_recorridos}", True, (255, 255, 255))
+    screen.blit(tiempo_text, (10, N * 60 + 10))
+    screen.blit(nodos_text, (10, N * 60 + 40))
     pygame.display.flip()
 
 
@@ -41,10 +47,10 @@ def main():
         return
 
     # Si hay solución, iniciar pygame y la pantalla
-    screen = pygame.display.set_mode((N * 60, N * 60))
+    screen = pygame.display.set_mode((N * 60, N * 60 + 100))
     pygame.display.set_caption('Recorrido del Caballo')
 
-    renderizar_tablero(screen, tablero.tableroSolucion, N)
+    renderizar_tablero(screen, tablero.tableroSolucion, N, tablero.tiempoTotal, tablero.nodosRecorridos)
 
     # Mantener la pantalla abierta hasta que el usuario cierre la ventana
     while True:

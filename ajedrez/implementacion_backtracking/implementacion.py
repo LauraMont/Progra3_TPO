@@ -33,9 +33,11 @@ class TableroBT:
         self.movimientosCaballo = movimientos
         self.tableroSolucion = [[-1 for _ in range(self.N)] for _ in range(self.N)]
         self.tableroSolucion[x][y] = 0  # Marca la posición inicial como visitada
-        self.movimientosRealizados = 0  # Contador de movimientos
+        self.nodosRecorridos = 0  # Contador de movimientos
+        self.tiempoTotal = 0 # Para calcular el tiempo total de ejecución
 
     def esMovimientoFactible(self, x, y):
+        self.nodosRecorridos += 1  # Contar cada nodo evaluado
         return 0 <= x < self.N and 0 <= y < self.N and self.tableroSolucion[x][y] == -1
     
     def recorridoCaballo(self):
@@ -60,7 +62,6 @@ class TableroBT:
             nx, ny = x + dx, y + dy
             if self.esMovimientoFactible(nx, ny):
                 self.tableroSolucion[nx][ny] = mov_i
-                self.movimientosRealizados += 1  # Cuenta el movimiento
                 if self.recorridoCaballo_recursivo((nx, ny), mov_i + 1):
                     return True
                 self.tableroSolucion[nx][ny] = -1  # Backtracking
@@ -78,7 +79,7 @@ class TableroBT:
         print(separador)
 
         # Imprime estadísticas de ejecución
-        print(f"\nMovimientos realizados: {self.movimientosRealizados}")
+        print(f"Nodos recorridos: {self.nodos_recorridos}")
         print(f"Tiempo total: {self.tiempoTotal:.4f} segundos")
 
 
